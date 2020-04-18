@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>newspapers</title>
+    <style type="text/css">
+      body {
+        margin: 0 3vw;
+        font-family: Helvetical, Arial, sans-serif;
+      }
+      form > div {
+        margin-bottom: 0.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>newspapers</h1>
+    <form style="margin-bottom: 50px;">
+      <div>URL: <input type="text" name="url" value="https://www.newspapers.com/image/527828631/?terms=" style="width: 500px;"></div>
+      <div>Width: <input type="number" name="w" value="4800"></div>
+      <div>Height: <input type="number" name="h" value="7600"></div>
+      <div>Quality (%): <input type="number" name="scale" min="0" max="100" step="any" value="25"></div>
+      <input type="submit" value="Submit">
+    </form>
+    <canvas id="canvas" width="1600" height="2400" style="width: 90vw;"></canvas>
+    <script type="text/javascript">
+      const tmb = 400;
+
+      const ctx = document.getElementById('canvas').getContext('2d');
+
+      function drawImage(id, x, y, sze) {
+        const img = new Image();
+        img.onload = function() {
+          ctx.drawImage(this, x * tmb, y * tmb, tmb, tmb);
+        };
+        img.src = `https://img.newspapers.com/img/thumbnail/${id}/${tmb}/${tmb}/${x * sze}_${y * sze}_${sze}_${sze}.jpg`
+      }
+
+      document.forms[0].onsubmit = function() {
+        const data = new FormData(this);
+
+        // https://img.newspapers.com/img/thumbnail/342901121/248/148/121_2132_399_239/0/yes/208_2240_225_24/517_2240_153_22_1/125_2270_125_24_1/518_2154_152_24_1/125_2184_125_24_1.jpg
+        const url = data.get('url');
+        const w = data.get('w');
+        const h = data.get('h');
+        const scale = data.get('scale') / 100;
+
+        const sze = Math.ceil(tmb / scale);
+
+        const id = url.split('/').find(seg => /^\d+$/.test(seg));
+        ctx.canvas.width = w * scale;
+        ctx.canvas.height = h * scale;
+        const ym = Math.ceil(h / sze);
+        const xm = Math.ceil(w / sze);
+
+        for (let y = 0; y < ym; y++) {
+          for (let x = 0; x < xm; x++) {
+            drawImage(id, x, y, sze);
+          }
+        }
+
+        return false;
+      };
+    </script>
+  </body>
+</html>
